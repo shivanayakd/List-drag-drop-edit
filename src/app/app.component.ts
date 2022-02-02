@@ -41,11 +41,11 @@ export class AppComponent {
   }
 
   transformer = (node: FileNode, level: number) => {
-    return new FileFlatNode(!!node.children, node.filename, level, node.type, node.id);
+    return new FileFlatNode(!!node.children, node.filename, level, node.id, node.info);
   }
   private _getLevel = (node: FileFlatNode) => node.level;
   private _isExpandable = (node: FileFlatNode) => node.expandable;
-  private _getChildren = (node: FileNode): Observable<FileNode[]> => observableOf(node.children);
+  private _getChildren = (node: FileNode): Observable<FileNode[]> => observableOf(node.children || []);
   hasChild = (_: number, _nodeData: FileFlatNode) => _nodeData.expandable;
 
   // DRAG AND DROP METHODS
@@ -62,7 +62,7 @@ export class AppComponent {
 
     function addExpandedChildren(node: FileNode, expanded: string[]) {
       result.push(node);
-      if (expanded.includes(node.id)) {
+      if (expanded.includes(node.id) && node.children) {
         node.children.map((child) => addExpandedChildren(child, expanded));
       }
     }
@@ -94,11 +94,13 @@ export class AppComponent {
     function findNodeSiblings(arr: Array<any>, id: string) {
       let result, subResult;
       arr.forEach((item, i) => {
-        if (item.id === id) {
+        if (item.id && item.id === id) {
           result = arr;
         } else if (item.children) {
           subResult = findNodeSiblings(item.children, id);
           if (subResult) result = subResult;
+        } else {
+          console.log('>>>>>>>');
         }
       });
       return result;
@@ -115,8 +117,8 @@ export class AppComponent {
     const siblings:Array<any> = findNodeSiblings(changedData, node.id) || [];
     const siblingIndex = siblings.findIndex(n => n.id === node.id);
     const nodeToInsert: FileNode = siblings.splice(siblingIndex, 1)[0];
-    if (nodeAtDest.id === nodeToInsert.id) return;
-
+    if (nodeAtDest?.id === nodeToInsert?.id) return;
+    console.log('>>>>>> noooooo', node);
     // ensure validity of drop - must be same level
     const nodeAtDestFlatNode = this.treeControl.dataNodes.find((n) => nodeAtDest.id === n.id);
     if (this.validateDrop && nodeAtDestFlatNode?.level !== node.level) {
@@ -202,12 +204,11 @@ export class AppComponent {
   }
 
   onSave(eve: Event, node: FileFlatNode, nodeVal: string) {
-    console.log('>editinggggg', eve, node, this.dataSource.data);
     const updated = this.dataSource.data.map(element => {
       if(element.id === node.id) {
         element.filename = nodeVal;
         return element;
-      }else if(element.children.length > 0) {
+      }else if(element.children && element.children.length > 0) {
         const updateChild = element.children.map(child => {
           if(child.id !== node.id) {
             return child;
@@ -223,9 +224,20 @@ export class AppComponent {
     this.rebuildTreeForData(changedData);
     this.activeEditNodeId = "";
   }
-  
+  onDelete(eve: Event, node: FileFlatNode, nodeVal: string) {
+    console.log('>editinggggg', eve, node, this.dataSource.data);
+    const updated = this.dataSource.data.filter(element => {
+      if(element.children) element.children = element.children.filter(child => child.id !== node.id);
+      return element.id !== node.id;
+    });
+    const changedData = JSON.parse(JSON.stringify(updated));
+    this.rebuildTreeForData(changedData);
+    this.activeEditNodeId = "";
+  }
+  onAdd(eve: Event, node: FileFlatNode, nodeVal: string) {
+    console.log('>editinggggg', eve, node, this.dataSource.data);
+  }
   addItem() {
     this.activeEditNodeId = "";
-
   }
 }

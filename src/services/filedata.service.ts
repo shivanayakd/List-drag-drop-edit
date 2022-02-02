@@ -20,21 +20,15 @@ import { FileNode } from 'src/models/types';
     Chrome: 'app',
     Webstorm: 'app'
   },
-  Documents: {
     angular: {
-      src: {
         compiler: 'ts',
         core: 'ts'
-      }
     },
     material2: {
-      src: {
         button: 'ts',
         checkbox: 'ts',
         input: 'ts'
-      }
-    }
-  },
+    },
   Downloads: {
     October: 'pdf',
     November: 'pdf',
@@ -46,15 +40,98 @@ import { FileNode } from 'src/models/types';
     Tutorial: 'html'
   },
   Pictures: {
-    'Photo Booth Library': {
-      Contents: 'dir',
-      Pictures: 'dir'
-    },
     Sun: 'png',
-    Woods: 'jpg'
+    Woods: 'jpg',
+    Contents: 'dir',
+    Pictures: 'dir'
   }
 });
 
+const NEW_DATA = [
+  {
+      "id": "1",
+      "children": [
+          {
+              "id": "1/1",
+              "filename": "Calendar",
+              "children": []
+          },
+          {
+              "id": "1/2",
+              "filename": "Chrome",
+              "children": []
+          },
+          {
+              "id": "1/3",
+              "filename": "Webstorm",
+              "children": []
+          }
+      ],
+      "filename": "Applications",
+      "info": "info 1"
+  },
+  {
+      "id": "2",
+      "children": [
+          {
+              "id": "2/1",
+              "filename": "compiler",
+              "children": []
+          },
+          {
+              "id": "2/2",
+              "filename": "core",
+              "children": []
+          }
+      ],
+      "filename": "angular",
+      "info": "info 2"
+  },
+  {
+      "id": "3",
+      "children": [
+          {
+              "id": "3/1",
+              "filename": "button",
+              "children": []
+          },
+          {
+              "id": "3/2",
+              "filename": "checkbox",
+              "children": []
+          },
+          {
+              "id": "3/3",
+              "filename": "input",
+              "children": []
+          }
+      ],
+      "filename": "material2",
+      "type": "info3"
+  },
+  {
+      "id": "4",
+      "children": [
+          {
+              "id": "4/1",
+              "filename": "October",
+              "children": []
+          },
+          {
+              "id": "4/2",
+              "filename": "November",
+              "children": []
+          },
+          {
+              "id": "4/3",
+              "filename": "Tutorial",
+              "children": []
+          }
+      ],
+      "filename": "Downloads",
+      "info": "info 4"
+  }
+]
  @Injectable({
   providedIn: 'root'
 })
@@ -74,9 +151,8 @@ import { FileNode } from 'src/models/types';
      // Build the tree nodes from Json object. The result is a list of `FileNode` with nested
      //     file node as children.
      const data = this.buildFileTree(dataObject, 0);
- 
      // Notify the change.
-     this.dataChange.next(data);
+     this.dataChange.next(NEW_DATA);
    }
  
    /**
@@ -86,7 +162,7 @@ import { FileNode } from 'src/models/types';
    buildFileTree(obj: {[key: string]: any}, level: number, parentId: string = '0'): FileNode[] {
      return Object.keys(obj).reduce<FileNode[]>((accumulator, key, idx) => {
        const value = obj[key];
-       const node = new FileNode('',[],'','');
+       const node = new FileNode('','',[],'');
        node.filename = key;
        /**
         * Make sure your node has an id so we can properly rearrange the tree during drag'n'drop.
@@ -99,7 +175,7 @@ import { FileNode } from 'src/models/types';
          if (typeof value === 'object') {
            node.children = this.buildFileTree(value, level + 1, node.id);
          } else {
-           node.type = value;
+           node.info = value;
          }
        }
  

@@ -6,7 +6,7 @@
 cdkDropList 
 (cdkDropListDropped)="drop($event)"
 >
-  <mat-tree-node 
+  <!-- <mat-tree-node 
   *matTreeNodeDef="let node" 
   matTreeNodeToggle 
   matTreeNodePadding 
@@ -18,7 +18,7 @@ cdkDropList
   (cdkDragReleased)="dragEnd()">
     <button mat-icon-button disabled></button>
     {{node.filename}} : {{node.type}}
-  </mat-tree-node>
+  </mat-tree-node> -->
 
   <mat-tree-node 
   *matTreeNodeDef="let node;when: hasChild" 
@@ -33,6 +33,7 @@ cdkDropList
     <button 
     mat-icon-button 
     matTreeNodeToggle 
+    *ngIf="node.level == 0"
     (click)="expansionModel.toggle(node.id)"
     [attr.aria-label]="'toggle ' + node.filename">
       <mat-icon class="mat-icon-rtl-mirror">
@@ -45,7 +46,8 @@ cdkDropList
     <div class="action-icons">
       <mat-icon aria-hidden="false" aria-label="Example home icon" *ngIf="node.id !== activeEditNodeId" (click)="activeEditNodeId = node.id">edit</mat-icon>
       <mat-icon aria-hidden="false" *ngIf="activeEditNodeId && node.id== activeEditNodeId" aria-label="Example home icon" (click)="onSave($event,node, nodeVal.value)">save</mat-icon>
-      <mat-icon aria-hidden="false" aria-label="Example home icon">delete</mat-icon>
+      <mat-icon aria-hidden="false" aria-label="Example home icon" (click)="onDelete($event,node, nodeVal.value)">delete</mat-icon>
+      <mat-icon aria-hidden="false" aria-label="Example home icon" (click)="onAdd($event,node, nodeVal.value)">add</mat-icon>
     </div>
   </mat-tree-node>
 </mat-tree>

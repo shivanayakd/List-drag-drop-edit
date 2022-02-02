@@ -5,9 +5,9 @@
  export class FileNode {
     constructor(
     public id: string,
-    public children: FileNode[],
     public filename: string,
-    public type: any
+    public children?: FileNode[],
+    public info?: any
     ){}
   }
   
@@ -17,7 +17,7 @@
       public expandable: boolean,
       public filename: string,
       public level: number,
-      public type: any,
-      public id: string
+      public id: string,
+      public info?: any
     ) {}
   }
