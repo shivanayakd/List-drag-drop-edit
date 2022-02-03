@@ -1,5 +1,16 @@
-<button click="addItem()">Add Item</button>
-<input type="text" [(ngModel)]="newItem">
+<button (click)="addItem()">Add Item</button>
+
+<div class="inputform" *ngIf="showedit">
+  <form class="form-inline">
+    <label for="name">Name:</label>
+    <input type="text" id="name" placeholder="Enter name" name="nodename">
+    <label for="help">Help Text:</label>
+    <input type="password" id="help" placeholder="Enter Help Text" name="helptext">
+    <button>Cancel</button>
+    <button type="submit">Submit</button>
+  </form>
+</div>
+
 <mat-tree 
 [dataSource]="dataSource" 
 [treeControl]="treeControl" 

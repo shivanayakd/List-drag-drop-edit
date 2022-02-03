@@ -132,6 +132,82 @@ const NEW_DATA = [
       "info": "info 4"
   }
 ]
+
+const Data = [
+  {
+    "scopeId": 2,
+    "scopeName": "Background",
+    "orderId": 1,
+    "help": "Helllo I am Help 1",
+    "scopePlanSubSetups": [
+      {
+        "scopeSubId": 1,
+        "scopeId": 2,
+        "scopeSubName": "Purpose of this Document",
+        "orderId": 0
+      }
+    ]
+  },
+  {
+    "scopeId": 3,
+    "scopeName": "Improvement",
+    "orderId": 10,
+    "help": "Helllo I am Help 12",
+    "scopePlanSubSetups": [
+      {
+        "scopeSubId": 2,
+        "scopeId": 3,
+        "scopeSubName": "Nonconformity and corrective action",
+        "orderId": 0
+      },
+      {
+        "scopeSubId": 3,
+        "scopeId": 3,
+        "scopeSubName": "Continual Improvement",
+        "orderId": 0
+      }
+    ]
+  },
+  {
+    "scopeId": 4,
+    "scopeName": "Scope of the ISMS",
+    "orderId": 2,
+    "help": "Helllo I am Help 15",
+    "scopePlanSubSetups": [
+      {
+        "scopeSubId": 4,
+        "scopeId": 4,
+        "scopeSubName": "Scope exclusion",
+        "orderId": 0
+      },
+      {
+        "scopeSubId": 5,
+        "scopeId": 4,
+        "scopeSubName": "Scope Description",
+        "orderId": 0
+      }
+    ]
+  },
+  {
+    "scopeId": 5,
+    "scopeName": "ISMS Policy",
+    "orderId": 3,
+    "help": "Helllo I am Help 251",
+    "scopePlanSubSetups": [
+      {
+        "scopeSubId": 6,
+        "scopeId": 5,
+        "scopeSubName": "Objectives of the ISMS",
+        "orderId": 0
+      },
+      {
+        "scopeSubId": 7,
+        "scopeId": 5,
+        "scopeSubName": "Applicability",
+        "orderId": 0
+      }
+    ]
+  }];
  @Injectable({
   providedIn: 'root'
 })

@@ -30,6 +30,7 @@ export class AppComponent {
   validateDrop = true;
   activeEditNodeId: string = '';
   newItem: string = '';
+  showedit: boolean = false;
 
   constructor(database: FiledataService) {
     this.treeFlattener = new MatTreeFlattener(this.transformer, this._getLevel,
@@ -234,10 +235,13 @@ export class AppComponent {
     this.rebuildTreeForData(changedData);
     this.activeEditNodeId = "";
   }
+
   onAdd(eve: Event, node: FileFlatNode, nodeVal: string) {
     console.log('>editinggggg', eve, node, this.dataSource.data);
   }
+
   addItem() {
     this.activeEditNodeId = "";
+    this.showedit = true;
   }
 }

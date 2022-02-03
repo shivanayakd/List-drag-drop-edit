@@ -21,3 +21,9 @@
       public info?: any
     ) {}
   }
+
+  export interface DialogData {
+    animal: string;
+    name: string;
+  }
+  
