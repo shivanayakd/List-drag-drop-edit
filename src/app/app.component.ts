@@ -1,5 +1,5 @@
 import {FlatTreeControl} from '@angular/cdk/tree';
-import {Component} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {MatTreeFlatDataSource, MatTreeFlattener} from '@angular/material/tree';
 import {Observable, of as observableOf} from 'rxjs';
 import {CdkDragDrop} from '@angular/cdk/drag-drop';
@@ -7,6 +7,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { FileFlatNode, FileNode } from 'src/models/types';
 import { FiledataService } from 'src/services/filedata.service';
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 /**
  * @title Tree with flat nodes
@@ -17,22 +18,27 @@ import { FiledataService } from 'src/services/filedata.service';
   styleUrls: ['./app.component.scss'],
   // providers: [FileDatabase]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
 
   treeControl: FlatTreeControl<FileFlatNode>;
   treeFlattener: MatTreeFlattener<FileNode, FileFlatNode>;
   dataSource: MatTreeFlatDataSource<FileNode, FileFlatNode>;
   // expansion model tracks expansion state
-  expansionModel = new SelectionModel<string>(true);
+  expansionModel = new SelectionModel<number>(true);
   dragging = false;
   expandTimeout: any;
   expandDelay = 1000;
   validateDrop = true;
   activeEditNodeId: string = '';
   newItem: string = '';
+  addType: any;
   showedit: boolean = false;
+  scopeForm: FormGroup = this.fb.group({
+    scopeName: [''],
+    help: ['']
+  });
 
-  constructor(database: FiledataService) {
+  constructor(private database: FiledataService, private fb: FormBuilder) {
     this.treeFlattener = new MatTreeFlattener(this.transformer, this._getLevel,
       this._isExpandable, this._getChildren);
     this.treeControl = new FlatTreeControl<FileFlatNode>(this._getLevel, this._isExpandable);
@@ -41,12 +47,16 @@ export class AppComponent {
     database.dataChange.subscribe(data => this.rebuildTreeForData(data));
   }
 
+  ngOnInit(): void {
+  }
+
   transformer = (node: FileNode, level: number) => {
-    return new FileFlatNode(!!node.children, node.filename, level, node.id, node.info);
+    // console.log('>>>>>> transformer', node);
+    return new FileFlatNode(!!node.scopePlanSubSetups, node.scopeName, level, node.scopeId, node.help);
   }
   private _getLevel = (node: FileFlatNode) => node.level;
   private _isExpandable = (node: FileFlatNode) => node.expandable;
-  private _getChildren = (node: FileNode): Observable<FileNode[]> => observableOf(node.children || []);
+  private _getChildren = (node: FileNode): Observable<FileNode[]> => observableOf(node.scopePlanSubSetups || []);
   hasChild = (_: number, _nodeData: FileFlatNode) => _nodeData.expandable;
 
   // DRAG AND DROP METHODS
@@ -61,10 +71,10 @@ export class AppComponent {
   visibleNodes(): FileNode[] {
     const result: FileNode[] = [];
 
-    function addExpandedChildren(node: FileNode, expanded: string[]) {
+    function addExpandedChildren(node: FileNode, expanded: number[]) {
       result.push(node);
-      if (expanded.includes(node.id) && node.children) {
-        node.children.map((child) => addExpandedChildren(child, expanded));
+      if (expanded.includes(node.scopeId) && node.scopePlanSubSetups) {
+        node.scopePlanSubSetups.map((child) => addExpandedChildren(child, expanded));
       }
     }
     this.dataSource.data.forEach((node) => {
@@ -92,44 +102,43 @@ export class AppComponent {
     const changedData = JSON.parse(JSON.stringify(this.dataSource.data));
 
     // recursive find function to find siblings of node
-    function findNodeSiblings(arr: Array<any>, id: string) {
+    function findNodeSiblings(arr: Array<any>, id: number) {
       let result, subResult;
       arr.forEach((item, i) => {
-        if (item.id && item.id === id) {
+        if (item.scopeId && item.scopeId === id) {
           result = arr;
-        } else if (item.children) {
-          subResult = findNodeSiblings(item.children, id);
+        } else if (item.scopePlanSubSetups) {
+          subResult = findNodeSiblings(item.scopePlanSubSetups, id);
           if (subResult) result = subResult;
         } else {
-          console.log('>>>>>>>');
+          // console.log('>>>>>>>');
         }
       });
       return result;
     }
-
+    
     // determine where to insert the node
-    const nodeAtDest = visibleNodes[event.currentIndex];
-    const newSiblings:Array<any> = findNodeSiblings(changedData, nodeAtDest.id) || [];
+    const nodeAtDest = visibleNodes[event.currentIndex] || [];
+    const newSiblings:Array<any> = findNodeSiblings(changedData, nodeAtDest.scopeId) || [];
     if (!newSiblings) return;
-    const insertIndex = newSiblings.findIndex(s => s.id === nodeAtDest.id);
+    const insertIndex = newSiblings.findIndex(s => s.scopeId === nodeAtDest.scopeId);
 
     // remove the node from its old place
     const node = event.item.data;
-    const siblings:Array<any> = findNodeSiblings(changedData, node.id) || [];
-    const siblingIndex = siblings.findIndex(n => n.id === node.id);
+    const siblings:Array<any> = findNodeSiblings(changedData, node.scopeId) || [];
+    const siblingIndex = siblings.findIndex(n => n.scopeId === node.scopeId);
     const nodeToInsert: FileNode = siblings.splice(siblingIndex, 1)[0];
-    if (nodeAtDest?.id === nodeToInsert?.id) return;
-    console.log('>>>>>> noooooo', node);
+    if (nodeAtDest?.scopeId === nodeToInsert?.scopeId) return;
     // ensure validity of drop - must be same level
-    const nodeAtDestFlatNode = this.treeControl.dataNodes.find((n) => nodeAtDest.id === n.id);
+    const nodeAtDestFlatNode = this.treeControl.dataNodes.find((n) => nodeAtDest.scopeId === n.scopeId);
     if (this.validateDrop && nodeAtDestFlatNode?.level !== node.level) {
       alert('Items can only be moved within the same level.');
       return;
     }
-
+    
     // insert node 
+    console.log('>>>>>> changed',  changedData);
     newSiblings.splice(insertIndex, 0, nodeToInsert);
-    console.log('>>>>>> changed', changedData);
     // rebuild tree with mutated data
     this.rebuildTreeForData(changedData);
   }
@@ -165,7 +174,7 @@ export class AppComponent {
   rebuildTreeForData(data: any) {
     this.dataSource.data = data;
     this.expansionModel.selected.forEach((id) => {
-        const node = this.treeControl.dataNodes.find((n) => n.id === id);
+        const node = this.treeControl.dataNodes.find((n) => n.scopeId === id);
         if(node) this.treeControl.expand(node);
       });
   }
@@ -174,11 +183,11 @@ export class AppComponent {
    * Not used but you might need this to programmatically expand nodes
    * to reveal a particular node
    */
-  private expandNodesById(flatNodes: FileFlatNode[], ids: string[]) {
+  private expandNodesById(flatNodes: FileFlatNode[], ids: number[]) {
     if (!flatNodes || flatNodes.length === 0) return;
     const idSet = new Set(ids);
     return flatNodes.forEach((node) => {
-      if (idSet.has(node.id)) {
+      if (idSet.has(node.scopeId)) {
         this.treeControl.expand(node);
         let parent = this.getParentNode(node);
         while (parent) {
@@ -206,18 +215,18 @@ export class AppComponent {
 
   onSave(eve: Event, node: FileFlatNode, nodeVal: string) {
     const updated = this.dataSource.data.map(element => {
-      if(element.id === node.id) {
-        element.filename = nodeVal;
+      if(element.scopeId === node.scopeId) {
+        element.scopeName = nodeVal;
         return element;
-      }else if(element.children && element.children.length > 0) {
-        const updateChild = element.children.map(child => {
-          if(child.id !== node.id) {
+      }else if(element.scopePlanSubSetups && element.scopePlanSubSetups.length > 0) {
+        const updateChild = element.scopePlanSubSetups.map(child => {
+          if(child.scopeId !== node.scopeId) {
             return child;
           }
-          child.filename = nodeVal;
+          child.scopeName = nodeVal;
           return child;
         })
-        element.children = updateChild;
+        element.scopePlanSubSetups = updateChild;
       } 
       return element;
     });
@@ -225,23 +234,37 @@ export class AppComponent {
     this.rebuildTreeForData(changedData);
     this.activeEditNodeId = "";
   }
-  onDelete(eve: Event, node: FileFlatNode, nodeVal: string) {
-    console.log('>editinggggg', eve, node, this.dataSource.data);
-    const updated = this.dataSource.data.filter(element => {
-      if(element.children) element.children = element.children.filter(child => child.id !== node.id);
-      return element.id !== node.id;
-    });
-    const changedData = JSON.parse(JSON.stringify(updated));
-    this.rebuildTreeForData(changedData);
+
+  onDelete(node: FileFlatNode) {
+    this.database.removeNode(node.scopeId);
     this.activeEditNodeId = "";
   }
 
-  onAdd(eve: Event, node: FileFlatNode, nodeVal: string) {
-    console.log('>editinggggg', eve, node, this.dataSource.data);
+  onAddChild(node: FileFlatNode, nodeVal: string) {
+    this.addType = {type: 'child', parentId: node.scopeId};
+    this.scopeForm.get("help")?.disable();
+    this.showedit = true;
   }
 
   addItem() {
+    this.addType = {type: 'parent', parentId: null};
+    this.scopeForm.get("help")?.enable();
     this.activeEditNodeId = "";
     this.showedit = true;
+  }
+  
+  formSubmit() {
+    if(this.addType.type === 'parent') {
+      this.database.addNode(this.scopeForm.value);
+    }
+    if(this.addType.type === 'child') {
+      this.database.addChildNode(this.addType.parentId, this.scopeForm.value);
+    }
+    this.showedit = false;
+  }
+
+  _hasChildren(id: number) {
+    const element: FileNode = this.dataSource.data.filter((ele) => ele.scopeId === id)[0];
+    return element.scopePlanSubSetups && element.scopePlanSubSetups.length > 0;;
   }
 }

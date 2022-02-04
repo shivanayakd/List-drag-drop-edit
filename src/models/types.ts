@@ -4,10 +4,11 @@
  */
  export class FileNode {
     constructor(
-    public id: string,
-    public filename: string,
-    public children?: FileNode[],
-    public info?: any
+    public scopeId: number,
+    public scopeName: string,
+    public scopePlanSubSetups?: FileNode[],
+    public help?: any,
+    public parentscopeId?: number
     ){}
   }
   
@@ -15,15 +16,11 @@
   export class FileFlatNode {
     constructor(
       public expandable: boolean,
-      public filename: string,
+      public scopeName: string,
       public level: number,
-      public id: string,
-      public info?: any
+      public scopeId: number,
+      public help?: any
     ) {}
   }
 
-  export interface DialogData {
-    animal: string;
-    name: string;
-  }
   

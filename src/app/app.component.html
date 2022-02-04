@@ -1,12 +1,13 @@
 <button (click)="addItem()">Add Item</button>
-
-<div class="inputform" *ngIf="showedit">
-  <form class="form-inline">
+<div class="wrapper">
+<div class="inputform" [ngClass]="{'slide-in': showedit === true, 'slide-out': showedit === false}">
+  <mat-icon (click)="showedit = false">close</mat-icon>
+  <form class="form-inline" [formGroup]="scopeForm" (ngSubmit)="formSubmit()">
     <label for="name">Name:</label>
-    <input type="text" id="name" placeholder="Enter name" name="nodename">
+    <input type="text" id="name" placeholder="Enter name" formControlName="scopeName">
     <label for="help">Help Text:</label>
-    <input type="password" id="help" placeholder="Enter Help Text" name="helptext">
-    <button>Cancel</button>
+    <input type="text" id="help" placeholder="Enter Help Text" formControlName="help">
+    <!-- <button>Cancel</button> -->
     <button type="submit">Submit</button>
   </form>
 </div>
@@ -44,21 +45,30 @@ cdkDropList
     <button 
     mat-icon-button 
     matTreeNodeToggle 
-    *ngIf="node.level == 0"
-    (click)="expansionModel.toggle(node.id)"
-    [attr.aria-label]="'toggle ' + node.filename">
+    [ngClass]="{ hideme: !(node.level === 0 && _hasChildren(node.scopeId)) }"
+    (click)="expansionModel.toggle(node.scopeId)"
+    [attr.aria-label]="'toggle ' + node.scopeName">
       <mat-icon class="mat-icon-rtl-mirror">
         {{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}
       </mat-icon>
     </button>
     <!-- {{node.filename}} : {{node.type}} -->
-    <input type="text" [value]="node.filename" #nodeVal [disabled]="node.id !== activeEditNodeId" [ngClass]="{'iseditable': node.id === activeEditNodeId}">
+    <input type="text" [value]="node.scopeName" #nodeVal [disabled]="node.scopeId !== activeEditNodeId" [ngClass]="{'iseditable': node.scopeId === activeEditNodeId}">
+    <button
+        class="help-text"
+        [ngClass]="{ hideme: !(node.level === 0 && _hasChildren(node.scopeId)) }"
+        [matTooltip]="node.help"
+        matTooltipPosition="right"
+        aria-label="Button that displays a tooltip in various positions">
+        <mat-icon>help_outline</mat-icon>
+    </button>
 
     <div class="action-icons">
-      <mat-icon aria-hidden="false" aria-label="Example home icon" *ngIf="node.id !== activeEditNodeId" (click)="activeEditNodeId = node.id">edit</mat-icon>
-      <mat-icon aria-hidden="false" *ngIf="activeEditNodeId && node.id== activeEditNodeId" aria-label="Example home icon" (click)="onSave($event,node, nodeVal.value)">save</mat-icon>
-      <mat-icon aria-hidden="false" aria-label="Example home icon" (click)="onDelete($event,node, nodeVal.value)">delete</mat-icon>
-      <mat-icon aria-hidden="false" aria-label="Example home icon" (click)="onAdd($event,node, nodeVal.value)">add</mat-icon>
+      <mat-icon *ngIf="node.scopeId !== activeEditNodeId" (click)="activeEditNodeId = node.scopeId">edit</mat-icon>
+      <mat-icon aria-hidden="false" *ngIf="activeEditNodeId && node.scopeId === activeEditNodeId" aria-label="Example home icon" (click)="onSave($event,node, nodeVal.value)">save</mat-icon>
+      <mat-icon (click)="onDelete(node)">delete</mat-icon>
+      <mat-icon (click)="onAddChild(node, nodeVal.value)" *ngIf="node.level === 0">add</mat-icon>
     </div>
   </mat-tree-node>
-</mat-tree>
+  </mat-tree>
+</div>
